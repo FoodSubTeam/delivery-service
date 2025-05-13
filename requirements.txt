@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+sqlalchemy[asyncio]
+asyncpg
+pydantic
+confluent_kafka
+kafka-python

@@ -1,0 +1,25 @@
+apiVersion: skaffold/v2beta26
+kind: Config
+metadata:
+  name: kitchens-service
+
+build:
+  artifacts:
+    - image: kitchen-service
+      context: .
+      docker:
+        dockerfile: Dockerfile
+
+deploy:
+  kubectl:
+    manifests:
+      - ./configuration/secrets.yaml
+      - ./configuration/deployment.yaml
+      - ./configuration/service.yaml
+      - ./configuration/database.yaml
+
+portForward:
+  - resourceType: service
+    resourceName: kitchen-service
+    port: 80
+    localPort: 8000
