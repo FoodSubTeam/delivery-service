@@ -78,30 +78,8 @@ async def list_kitchen_orders(
     orders = result.scalars().all()
     return orders
 
-
-from app.kafka import KafkaProducerSingleton
-import json
-
 @router.get("/kitchen/test")
 async def test_kitchen():
-    print(f"test_kitchen called.")
-    test_msg = {
-        "type": "generate_daily_kitchen_orders",
-        "data": {
-            "date": "2025-05-05",
-            "subscriptions": [
-                {
-                    "subscription_id": 1,
-                    "user_id": 123,
-                    "delivery_address": "123 Food Street",
-                    "meals": [
-                        {"meal_id": 1, "meal_name": "Pasta", "recipe": "Cook 10 min", "quantity": 2},
-                        {"meal_id": 2, "meal_name": "Salad", "recipe": "Cut tomato", "quantity": 1}
-                    ]
-                }
-            ]
-        }
-    }
-    # KafkaProducerSingleton.produce_message("kitchen.order", json.dumps(test_msg))
-    
-    return {"message": "Lol!"}
+    import logging
+    logging.warning("kitchen test hit")
+    return {"message": "ok"}

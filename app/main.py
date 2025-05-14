@@ -5,6 +5,7 @@ from app.models import Base
 from app.consumer import start_consumer
 from app.kafka import init_topics
 import logging
+import asyncio
 
 app = FastAPI()
 
@@ -27,6 +28,6 @@ async def on_startup():
     init_topics()
 
     # Consume messages from all subscribed topics
-    await start_consumer()
+    asyncio.create_task(start_consumer())
 
 

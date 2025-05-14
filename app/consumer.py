@@ -44,14 +44,22 @@ async def on_message_received(message_str):
         print(f"Unknown message type: {msg_type}")
 
 
-async def start_consumer():
+def blocking_consume_loop():
     topics = ['kitchen.order']
     while True:
         message = KafkaConsumerSingleton.consume_message(topics)
         if message:
-            await on_message_received(message)
+            # Schedule the async callback from the thread
+            asyncio.run_coroutine_threadsafe(
+                on_message_received(message),
+                asyncio.get_event_loop()
+            )
+        time.sleep(1)
 
-        await asyncio.sleep(1)
+
+async def start_consumer():
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, blocking_consume_loop)
 
 
 # Messages:
