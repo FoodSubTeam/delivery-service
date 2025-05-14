@@ -1,65 +1,51 @@
-import time
-import json
+from aiokafka import AIOKafkaConsumer
 import asyncio
-from app.kafka import KafkaConsumerSingleton
-from app.service import KitchenService
-from app.database import get_db
+import json
+from app.kafka_message_handlers import handlers
+import logging
 
-service = KitchenService()
-    
-async def handle_generate_daily_orders(data):
-    date_str = data.get("date")
-    if not date_str:
-        print("Missing 'date' in message data")
-        return
+consumer = None
 
-    print(f"Generating kitchen orders for {date_str}")
-    
-    async with get_db() as db:
-        await service.generate_kitchen_orders_for_date(date_str, db)
-
-
-handlers = {
-    "generate_daily_kitchen_orders": handle_generate_daily_orders,
-}
-
-
-async def on_message_received(message_str):
-    try:
-        message = json.loads(message_str)
-    except Exception as e:
-        print(f"Failed to parse JSON message: {e}")
-        return
-    
-    msg_type = message.get("type")
-    data = message.get("data")
-
-    if not msg_type:
-        print("Error: message missing 'type'")
-        return
-
-    if msg_type in handlers:
-        asyncio.create_task(handlers[msg_type](data))
-    else:
-        print(f"Unknown message type: {msg_type}")
-
-
-def blocking_consume_loop():
-    topics = ['kitchen.order']
-    while True:
-        message = KafkaConsumerSingleton.consume_message(topics)
-        if message:
-            # Schedule the async callback from the thread
-            asyncio.run_coroutine_threadsafe(
-                on_message_received(message),
-                asyncio.get_event_loop()
-            )
-        time.sleep(1)
-
+kafka_bootstrap_servers = 'kafka-service.kafka.svc.cluster.local:9092'
 
 async def start_consumer():
-    loop = asyncio.get_event_loop()
-    await loop.run_in_executor(None, blocking_consume_loop)
+    global consumer
+    consumer = AIOKafkaConsumer(
+        'kitchen.order',
+        bootstrap_servers=kafka_bootstrap_servers,
+        group_id="kitchen-group"
+    )
+    await consumer.start()
+    try:
+        async for msg in consumer:
+            await handle_message(msg.value)
+    finally:
+        await consumer.stop()
+
+
+async def handle_message(raw_message: bytes):
+    try:
+        message = json.loads(raw_message.decode())
+        logging.warning(f"Message decoded once: {message}")
+    except Exception as e:
+        logging.warning(f"Failed to parse message: {e}")
+        return
+
+    msg_type = message.get("type")
+    data = message.get("data")
+    
+    if isinstance(data, str):
+        data = json.loads(data)
+
+    if not msg_type:
+        print("Missing message type")
+        return
+
+    handler = handlers.get(msg_type)
+    if handler:
+        asyncio.create_task(handler(data))  # Schedule the handler
+    else:
+        print(f"Unknown message type: {msg_type}")
 
 
 # Messages:

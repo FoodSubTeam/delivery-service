@@ -17,8 +17,8 @@ async def root():
 
 @app.on_event("startup")
 async def on_startup():
-    
-    logging.basicConfig(level=logging.DEBUG)
+    logging.getLogger("aiokafka").setLevel(logging.WARNING)
+    # logging.basicConfig(level=logging.DEBUG)
 
     # Create tables on startup
     async with engine.begin() as conn:

@@ -6,6 +6,9 @@ from app.models import KitchenOrder, KitchenOrderMeal
 from app.schemas import KitchenOrderCreate, KitchenOrderRead
 from app.database import SessionLocal
 from typing import List
+from app.kafka import KafkaProducerSingleton
+import json
+import logging
 
 router = APIRouter()
 
@@ -78,8 +81,34 @@ async def list_kitchen_orders(
     orders = result.scalars().all()
     return orders
 
+
+@router.get("/kitchen/test-kafka")
+async def test_kafka():
+    logging.warning("test_kafka called")
+    test_msg = {
+        "type": "generate_daily_kitchen_orders",
+        "data": {
+            "date": "2025-05-05",
+            "subscriptions": [
+                {
+                    "subscription_id": 1,
+                    "user_id": 123,
+                    "delivery_address": "123 Food Street",
+                    "meals": [
+                        {"meal_id": 1, "meal_name": "Pasta", "recipe": "Cook 10 min", "quantity": 2},
+                        {"meal_id": 2, "meal_name": "Salad", "recipe": "Cut tomato", "quantity": 1}
+                    ]
+                }
+            ]
+        }
+    }
+    KafkaProducerSingleton.produce_message("kitchen.order", json.dumps(test_msg))
+    logging.warning(f"Sent message: {json.dumps(test_msg)}")
+    
+    return {"message": "Lol!"}
+
+
 @router.get("/kitchen/test")
 async def test_kitchen():
-    import logging
     logging.warning("kitchen test hit")
     return {"message": "ok"}

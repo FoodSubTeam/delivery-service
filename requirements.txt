@@ -5,3 +5,4 @@ asyncpg
 pydantic
 confluent_kafka
 kafka-python
+aiokafka
