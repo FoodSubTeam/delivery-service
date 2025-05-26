@@ -9,26 +9,24 @@ import logging
 class KitchenService():
     
     async def generate_kitchen_orders_for_date(self, data: dict, db: AsyncSession):
-        subscriptions = data.get("subscriptions", [])
-        if not isinstance(subscriptions, list):
-            raise ValueError("Expected 'subscriptions' to be a list")
-        
-        date_str = data.get("date")
-        delivery_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        if not isinstance(data, list):
+            raise ValueError("Expected input 'data' to be a list of offers")
 
-        for subscription in subscriptions:
-            meals = subscription.get("meals", [])
+        for offer in data:
+            meals = offer.get("meals", [])
             order_data = KitchenOrder(
-                subscription_id=subscription.get("subscription_id"),
-                user_id=subscription.get("user_id"),
-                delivery_date=delivery_date,
-                delivery_address=subscription.get("delivery_address"),
+                subscription_id=offer.get("subscription_id"),
+                user_id=offer.get("user_id"),
+                kitchen_id=offer.get("kitchen_id"),
+                delivery_date=datetime.utcnow().date(),
+                delivery_address=offer.get("delivery_address"),
                 meals=[
                     KitchenOrderMeal(
-                        meal_id=meal["meal_id"],
-                        meal_name=meal["meal_name"],
-                        recipe=meal["recipe"],
-                        notes=meal.get("notes", ""),  # default if missing
+                        meal_id=meal["id"],
+                        meal_code=meal["meal_code"],
+                        meal_name=meal["name"],
+                        description=meal["description"],
+                        notes=meal.get("notes", ""),
                         quantity=meal["quantity"]
                     )
                     for meal in meals
@@ -40,4 +38,4 @@ class KitchenService():
             await db.refresh(order_data)
             await db.refresh(order_data, attribute_names=["meals"])
 
-        logging.warning(f"Created {len(subscriptions)} kitchen orders.")
+        logging.warning(f"Created {len(data)} kitchen orders.")

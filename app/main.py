@@ -22,6 +22,7 @@ async def on_startup():
 
     # Create tables on startup
     async with engine.begin() as conn:
+        # await conn.run_sync(Base.metadata.drop_all)  # Uncomment to reset database entries
         await conn.run_sync(Base.metadata.create_all)
 
     # Initialize all required topics for the service

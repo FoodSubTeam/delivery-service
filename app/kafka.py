@@ -1,5 +1,6 @@
 from confluent_kafka import Producer, Consumer, KafkaError
 from kafka.admin import KafkaAdminClient, NewTopic
+from app.topics import Topic
 
 kafka_bootstrap_servers = 'kafka-service.kafka.svc.cluster.local:9092'
 
@@ -32,6 +33,6 @@ def setup_topic(topic_name: str):
 
 
 def init_topics():
-    required_topics = ["kitchen.order"]
+    required_topics = [Topic.KITCHEN_ORDER.value]
     for topic in required_topics:
         setup_topic(topic)

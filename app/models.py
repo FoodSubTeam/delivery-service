@@ -16,8 +16,9 @@ class KitchenOrder(Base):
 
     id = Column(Integer, primary_key=True)
     
-    subscription_id = Column(Integer, nullable=False)
-    user_id = Column(Integer, nullable=False)
+    subscription_id = Column(String, nullable=False)
+    user_id = Column(String, nullable=False)
+    kitchen_id = Column(Integer, nullable=False)
     delivery_date = Column(Date, nullable=False)       
     status = Column(Enum(OrderStatus), default=OrderStatus.pending, nullable=False)
     delivery_address = Column(String, nullable=False)
@@ -35,8 +36,9 @@ class KitchenOrderMeal(Base):
     order_id = Column(Integer, ForeignKey('kitchen_orders.id'), nullable=False)
     
     meal_id = Column(Integer, nullable=False)
+    meal_code = Column(String, nullable=False)
     meal_name = Column(String, nullable=False)
-    recipe = Column(String, nullable=False)
+    description = Column(String, nullable=False)
     notes = Column(String)
     quantity = Column(Integer, default=1, nullable=False)
 

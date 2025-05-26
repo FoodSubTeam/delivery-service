@@ -2,6 +2,7 @@ from aiokafka import AIOKafkaConsumer
 import asyncio
 import json
 from app.kafka_message_handlers import handlers
+from app.topics import Topic
 import logging
 
 consumer = None
@@ -11,7 +12,7 @@ kafka_bootstrap_servers = 'kafka-service.kafka.svc.cluster.local:9092'
 async def start_consumer():
     global consumer
     consumer = AIOKafkaConsumer(
-        'kitchen.order',
+        Topic.KITCHEN_ORDER.value,
         bootstrap_servers=kafka_bootstrap_servers,
         group_id="kitchen-group"
     )
@@ -24,6 +25,7 @@ async def start_consumer():
 
 
 async def handle_message(raw_message: bytes):
+    logging.warning("Message arrived!")
     try:
         message = json.loads(raw_message.decode())
         logging.warning(f"Message decoded once: {message}")

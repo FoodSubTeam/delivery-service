@@ -19,8 +19,9 @@ class KitchenOrderMealCreate(BaseModel):
     quantity: int = Field(default=1, ge=1)
 
 class KitchenOrderCreate(BaseModel):
-    subscription_id: int
-    user_id: int
+    subscription_id: str
+    user_id: str
+    kitchen_id: int
     delivery_date: date
     delivery_address: str
     status: OrderStatus = OrderStatus.pending
@@ -31,8 +32,9 @@ class KitchenOrderCreate(BaseModel):
 class KitchenOrderMealRead(BaseModel):
     id: int
     meal_id: int
+    meal_code: str
     meal_name: str
-    recipe: str
+    description: str
     notes: Optional[str]
     quantity: int
 
@@ -41,8 +43,9 @@ class KitchenOrderMealRead(BaseModel):
 
 class KitchenOrderRead(BaseModel):
     id: int
-    subscription_id: int
-    user_id: int
+    subscription_id: str
+    user_id: str
+    kitchen_id: int
     delivery_date: date
     delivery_address: str
     status: OrderStatus

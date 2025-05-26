@@ -16,7 +16,9 @@ async def get_db():
     async with SessionLocal() as session:
         yield session
 
-@router.post("/kitchen/kitchen-orders/", response_model=KitchenOrderRead, status_code=201)
+
+# Create a new kitchen order
+@router.post("/kitchen-order", response_model=KitchenOrderRead, status_code=201)
 async def create_kitchen_order(
     order_in: KitchenOrderCreate,
     db: AsyncSession = Depends(get_db)
@@ -48,7 +50,9 @@ async def create_kitchen_order(
 
     return order
 
-@router.get("/kitchen/kitchen-orders/{order_id}", response_model=KitchenOrderRead)
+
+# Get kitchen order by id
+@router.get("/kitchen-order/{order_id}", response_model=KitchenOrderRead)
 async def get_kitchen_order(
     order_id: int,
     db: AsyncSession = Depends(get_db)
@@ -65,7 +69,28 @@ async def get_kitchen_order(
 
     return order
 
-@router.get("/kitchen/kitchen-orders/", response_model=List[KitchenOrderRead])
+
+# Get all kitchen orders by kitchen_id
+@router.get("/kitchen-orders/by-kitchen/{kitchen_id}", response_model=List[KitchenOrderRead])
+async def get_kitchen_orders_by_kitchen_id(
+    kitchen_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(KitchenOrder)
+        .where(KitchenOrder.kitchen_id == kitchen_id)
+        .options(selectinload(KitchenOrder.meals))
+    )
+    orders = result.scalars().all()
+
+    if not orders:
+        raise HTTPException(status_code=404, detail="No kitchen orders found for this kitchen")
+
+    return orders
+
+
+# Get all kitchen orders
+@router.get("/kitchen-orders", response_model=List[KitchenOrderRead])
 async def list_kitchen_orders(
     skip: int = Query(0, ge=0),
     limit: int = Query(10, le=100),
@@ -82,6 +107,7 @@ async def list_kitchen_orders(
     return orders
 
 
+# Test kafka communication
 @router.get("/kitchen/test-kafka")
 async def test_kafka():
     logging.warning("test_kafka called")
@@ -93,10 +119,11 @@ async def test_kafka():
                 {
                     "subscription_id": 1,
                     "user_id": 123,
+                    "kitchen_id": 1,
                     "delivery_address": "123 Food Street",
                     "meals": [
-                        {"meal_id": 1, "meal_name": "Pasta", "recipe": "Cook 10 min", "quantity": 2},
-                        {"meal_id": 2, "meal_name": "Salad", "recipe": "Cut tomato", "quantity": 1}
+                        {"meal_id": 1, "meal_code": "MLE_001", "meal_name": "Pasta", "recipe": "Cook 10 min", "quantity": 2},
+                        {"meal_id": 2, "meal_code": "MLE_002", "meal_name": "Salad", "recipe": "Cut tomato", "quantity": 1}
                     ]
                 }
             ]
@@ -108,6 +135,7 @@ async def test_kafka():
     return {"message": "Lol!"}
 
 
+# Test endpoint
 @router.get("/kitchen/test")
 async def test_kitchen():
     logging.warning("kitchen test hit")
