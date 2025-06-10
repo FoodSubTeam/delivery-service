@@ -11,25 +11,25 @@ class OrderStatus(str, Enum):
     delivered = "delivered"
     failed = "failed"
 
-class KitchenOrderMealCreate(BaseModel):
+class DeliveryOrderMealCreate(BaseModel):
     meal_id: int
     meal_name: str
     recipe: str
     notes: Optional[str] = None
     quantity: int = Field(default=1, ge=1)
 
-class KitchenOrderCreate(BaseModel):
+class DeliveryOrderCreate(BaseModel):
     subscription_id: str
     user_id: str
-    kitchen_id: int
+    delivery_id: int
     delivery_date: date
     delivery_address: str
     status: OrderStatus = OrderStatus.pending
-    meals: List[KitchenOrderMealCreate]
+    meals: List[DeliveryOrderMealCreate]
 
 
 # Read
-class KitchenOrderMealRead(BaseModel):
+class DeliveryOrderMealRead(BaseModel):
     id: int
     meal_id: int
     meal_code: str
@@ -41,17 +41,17 @@ class KitchenOrderMealRead(BaseModel):
     class Config:
         orm_mode = True
 
-class KitchenOrderRead(BaseModel):
+class DeliveryOrderRead(BaseModel):
     id: int
     subscription_id: str
     user_id: str
-    kitchen_id: int
+    delivery_id: int
     delivery_date: date
     delivery_address: str
     status: OrderStatus
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
-    meals: List[KitchenOrderMealRead]
+    meals: List[DeliveryOrderMealRead]
 
     class Config:
         orm_mode = True

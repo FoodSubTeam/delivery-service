@@ -13,7 +13,7 @@ app.include_router(router)
 
 @app.get("/")
 async def root():
-    return {"message": "Kitchen Service is running"}
+    return {"message": "Delivery Service is running"}
 
 @app.on_event("startup")
 async def on_startup():

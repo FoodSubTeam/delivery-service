@@ -11,29 +11,29 @@ class OrderStatus(enum.Enum):
     delivered = "delivered"
     failed = "failed"
 
-class KitchenOrder(Base):
-    __tablename__ = 'kitchen_orders'
+class DeliveryOrder(Base):
+    __tablename__ = 'delivery_orders'
 
     id = Column(Integer, primary_key=True)
     
     subscription_id = Column(String, nullable=False)
     user_id = Column(String, nullable=False)
-    kitchen_id = Column(Integer, nullable=False)
+    delivery_id = Column(Integer, nullable=False)
     delivery_date = Column(Date, nullable=False)       
     status = Column(Enum(OrderStatus), default=OrderStatus.pending, nullable=False)
     delivery_address = Column(String, nullable=False)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
-    meals = relationship("KitchenOrderMeal", back_populates="order", cascade="all, delete-orphan")
+    meals = relationship("DeliveryOrderMeal", back_populates="order", cascade="all, delete-orphan")
 
     def __repr__(self):
-        return f"<KitchenOrder id={self.id} date={self.delivery_date} status={self.status}>"
+        return f"<DeliveryOrder id={self.id} date={self.delivery_date} status={self.status}>"
 
-class KitchenOrderMeal(Base):
-    __tablename__ = 'kitchen_order_meals'
+class DeliveryOrderMeal(Base):
+    __tablename__ = 'delivery_order_meals'
 
     id = Column(Integer, primary_key=True)
-    order_id = Column(Integer, ForeignKey('kitchen_orders.id'), nullable=False)
+    order_id = Column(Integer, ForeignKey('delivery_orders.id'), nullable=False)
     
     meal_id = Column(Integer, nullable=False)
     meal_code = Column(String, nullable=False)
@@ -42,7 +42,7 @@ class KitchenOrderMeal(Base):
     notes = Column(String)
     quantity = Column(Integer, default=1, nullable=False)
 
-    order = relationship("KitchenOrder", back_populates="meals")
+    order = relationship("DeliveryOrder", back_populates="meals")
 
     def __repr__(self):
-        return f"<KitchenOrderMeal id={self.id} name={self.meal_name} qty={self.quantity}>"
+        return f"<DeliveryOrderMeal id={self.id} name={self.meal_name} qty={self.quantity}>"

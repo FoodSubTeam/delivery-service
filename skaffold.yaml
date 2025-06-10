@@ -1,11 +1,11 @@
 apiVersion: skaffold/v2beta26
 kind: Config
 metadata:
-  name: kitchens-service
+  name: deliverys-service
 
 build:
   artifacts:
-    - image: kitchen-service
+    - image: delivery-service
       context: .
       docker:
         dockerfile: Dockerfile
@@ -20,10 +20,10 @@ deploy:
 
 portForward:
   - resourceType: service
-    resourceName: kitchen-service
+    resourceName: delivery-service
     port: 80
     localPort: 8000
   - resourceType: service
-    resourceName: kitchen-postgres
+    resourceName: delivery-postgres
     port: 5432
     localPort: 5432

@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kitchen-service
+  name: delivery-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: kitchen-service
+      app: delivery-service
   template:
     metadata:
       labels:
-        app: kitchen-service
+        app: delivery-service
     spec:
       containers:
-        - name: kitchen-service
-          image: kitchen-service
+        - name: delivery-service
+          image: delivery-service
           ports:
             - containerPort: 8000
           env:

@@ -12,7 +12,7 @@ class KafkaProducerSingleton:
         if cls._producer is None:
             cls._producer = Producer({
                 'bootstrap.servers': kafka_bootstrap_servers,
-                'client.id': 'kitchen-service-producer'
+                'client.id': 'delivery-service-producer'
             })
         return cls._producer
 
@@ -33,6 +33,6 @@ def setup_topic(topic_name: str):
 
 
 def init_topics():
-    required_topics = [Topic.KITCHEN_ORDER.value]
+    required_topics = [Topic.DELIVERY_ORDER.value]
     for topic in required_topics:
         setup_topic(topic)

@@ -1,8 +1,8 @@
 from enum import Enum
 
 class Topic(Enum):
-    KITCHEN_ORDER = "kitchen.order"
+    DELIVERY_ORDER = "delivery.order"
 
 
 class MessageType(Enum):
-    GENERATE_KITCHEN_ORDERS = "generate_kitchen_orders"
+    GENERATE_DELIVERY_ORDERS = "generate_delivery_orders"

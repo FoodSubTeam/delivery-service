@@ -12,9 +12,9 @@ kafka_bootstrap_servers = 'kafka-service.kafka.svc.cluster.local:9092'
 async def start_consumer():
     global consumer
     consumer = AIOKafkaConsumer(
-        Topic.KITCHEN_ORDER.value,
+        Topic.DELIVERY_ORDER.value,
         bootstrap_servers=kafka_bootstrap_servers,
-        group_id="kitchen-group"
+        group_id="delivery-group"
     )
     await consumer.start()
     try:
@@ -51,4 +51,4 @@ async def handle_message(raw_message: bytes):
 
 
 # Messages:
-# { "type": "generate_daily_kitchen_orders", "data": { "date": "2025-05-05" } }
+# { "type": "generate_daily_delivery_orders", "data": { "date": "2025-05-05" } }

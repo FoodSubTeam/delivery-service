@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
-from app.models import KitchenOrder, KitchenOrderMeal
-from app.schemas import KitchenOrderCreate, KitchenOrderRead
+from app.models import DeliveryOrder, DeliveryOrderMeal
+from app.schemas import DeliveryOrderCreate, DeliveryOrderRead
 from app.database import SessionLocal
 from typing import List
 from app.kafka import KafkaProducerSingleton
@@ -17,13 +17,13 @@ async def get_db():
         yield session
 
 
-# Create a new kitchen order
-@router.post("/kitchen-order", response_model=KitchenOrderRead, status_code=201)
-async def create_kitchen_order(
-    order_in: KitchenOrderCreate,
+# Create a new delivery order
+@router.post("/delivery-order", response_model=DeliveryOrderRead, status_code=201)
+async def create_delivery_order(
+    order_in: DeliveryOrderCreate,
     db: AsyncSession = Depends(get_db)
 ):
-    order = KitchenOrder(
+    order = DeliveryOrder(
         subscription_id=order_in.subscription_id,
         user_id=order_in.user_id,
         delivery_date=order_in.delivery_date,
@@ -32,7 +32,7 @@ async def create_kitchen_order(
     )
 
     for meal_data in order_in.meals:
-        meal = KitchenOrderMeal(
+        meal = DeliveryOrderMeal(
             meal_id=meal_data.meal_id,
             meal_name=meal_data.meal_name,
             meal_code=meal_data.meal_code,
@@ -51,16 +51,16 @@ async def create_kitchen_order(
     return order
 
 
-# Get kitchen order by id
-@router.get("/kitchen-order/{order_id}", response_model=KitchenOrderRead)
-async def get_kitchen_order(
+# Get delivery order by id
+@router.get("/delivery-order/{order_id}", response_model=DeliveryOrderRead)
+async def get_delivery_order(
     order_id: int,
     db: AsyncSession = Depends(get_db)
 ):
     result = await db.execute(
-        select(KitchenOrder)
-        .where(KitchenOrder.id == order_id)
-        .options(selectinload(KitchenOrder.meals))
+        select(DeliveryOrder)
+        .where(DeliveryOrder.id == order_id)
+        .options(selectinload(DeliveryOrder.meals))
     )
     order = result.scalars().first()
 
@@ -70,36 +70,36 @@ async def get_kitchen_order(
     return order
 
 
-# Get all kitchen orders by kitchen_id
-@router.get("/kitchen-orders/by-kitchen/{kitchen_id}", response_model=List[KitchenOrderRead])
-async def get_kitchen_orders_by_kitchen_id(
-    kitchen_id: int,
+# Get all delivery orders by delivery_id
+@router.get("/delivery-orders/by-delivery/{delivery_id}", response_model=List[DeliveryOrderRead])
+async def get_delivery_orders_by_delivery_id(
+    delivery_id: int,
     db: AsyncSession = Depends(get_db)
 ):
     result = await db.execute(
-        select(KitchenOrder)
-        .where(KitchenOrder.kitchen_id == kitchen_id)
-        .options(selectinload(KitchenOrder.meals))
+        select(DeliveryOrder)
+        .where(DeliveryOrder.delivery_id == delivery_id)
+        .options(selectinload(DeliveryOrder.meals))
     )
     orders = result.scalars().all()
 
     if not orders:
-        raise HTTPException(status_code=404, detail="No kitchen orders found for this kitchen")
+        raise HTTPException(status_code=404, detail="No delivery orders found for this delivery")
 
     return orders
 
 
-# Get all kitchen orders
-@router.get("/kitchen-orders", response_model=List[KitchenOrderRead])
-async def list_kitchen_orders(
+# Get all delivery orders
+@router.get("/delivery-orders", response_model=List[DeliveryOrderRead])
+async def list_delivery_orders(
     skip: int = Query(0, ge=0),
     limit: int = Query(10, le=100),
     db: AsyncSession = Depends(get_db)
 ):
     result = await db.execute(
-        select(KitchenOrder)
-        .options(selectinload(KitchenOrder.meals))
-        .order_by(KitchenOrder.delivery_date.asc())
+        select(DeliveryOrder)
+        .options(selectinload(DeliveryOrder.meals))
+        .order_by(DeliveryOrder.delivery_date.asc())
         .offset(skip)
         .limit(limit)
     )
@@ -108,18 +108,18 @@ async def list_kitchen_orders(
 
 
 # Test kafka communication
-@router.get("/kitchen/test-kafka")
+@router.get("/delivery/test-kafka")
 async def test_kafka():
     logging.warning("test_kafka called")
     test_msg = {
-        "type": "generate_daily_kitchen_orders",
+        "type": "generate_daily_delivery_orders",
         "data": {
             "date": "2025-05-05",
             "subscriptions": [
                 {
                     "subscription_id": 1,
                     "user_id": 123,
-                    "kitchen_id": 1,
+                    "delivery_id": 1,
                     "delivery_address": "123 Food Street",
                     "meals": [
                         {"meal_id": 1, "meal_code": "MLE_001", "meal_name": "Pasta", "recipe": "Cook 10 min", "quantity": 2},
@@ -129,14 +129,14 @@ async def test_kafka():
             ]
         }
     }
-    KafkaProducerSingleton.produce_message("kitchen.order", json.dumps(test_msg))
+    KafkaProducerSingleton.produce_message("delivery.order", json.dumps(test_msg))
     logging.warning(f"Sent message: {json.dumps(test_msg)}")
     
     return {"message": "Lol!"}
 
 
 # Test endpoint
-@router.get("/kitchen/test")
-async def test_kitchen():
-    logging.warning("kitchen test hit")
+@router.get("/delivery/test")
+async def test_delivery():
+    logging.warning("delivery test hit")
     return {"message": "ok"}
