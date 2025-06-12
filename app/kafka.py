@@ -4,6 +4,8 @@ from app.topics import Topic
 
 kafka_bootstrap_servers = 'kafka-service.kafka.svc.cluster.local:9092'
 
+
+
 class KafkaProducerSingleton:
     _producer = None
 

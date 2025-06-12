@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
-from app.models import DeliveryOrder, DeliveryOrderMeal
-from app.schemas import DeliveryOrderCreate, DeliveryOrderRead
+from app.models import DeliveryOrder
+from app.schemas import DeliveryOrderRead
 from app.database import SessionLocal
 from typing import List
 from app.kafka import KafkaProducerSingleton
@@ -17,40 +17,6 @@ async def get_db():
         yield session
 
 
-# Create a new delivery order
-@router.post("/delivery-order", response_model=DeliveryOrderRead, status_code=201)
-async def create_delivery_order(
-    order_in: DeliveryOrderCreate,
-    db: AsyncSession = Depends(get_db)
-):
-    order = DeliveryOrder(
-        subscription_id=order_in.subscription_id,
-        user_id=order_in.user_id,
-        delivery_date=order_in.delivery_date,
-        delivery_address=order_in.delivery_address,
-        status=order_in.status,
-    )
-
-    for meal_data in order_in.meals:
-        meal = DeliveryOrderMeal(
-            meal_id=meal_data.meal_id,
-            meal_name=meal_data.meal_name,
-            meal_code=meal_data.meal_code,
-            tags=meal_data.tags,
-            notes=meal_data.notes,
-            quantity=meal_data.quantity,
-        )
-        order.meals.append(meal)
-
-    db.add(order)
-    await db.commit()
-    await db.refresh(order)
-
-    await db.refresh(order, attribute_names=["meals"])
-
-    return order
-
-
 # Get delivery order by id
 @router.get("/delivery-order/{order_id}", response_model=DeliveryOrderRead)
 async def get_delivery_order(
@@ -60,7 +26,6 @@ async def get_delivery_order(
     result = await db.execute(
         select(DeliveryOrder)
         .where(DeliveryOrder.id == order_id)
-        .options(selectinload(DeliveryOrder.meals))
     )
     order = result.scalars().first()
 
@@ -79,7 +44,6 @@ async def get_delivery_orders_by_delivery_id(
     result = await db.execute(
         select(DeliveryOrder)
         .where(DeliveryOrder.delivery_id == delivery_id)
-        .options(selectinload(DeliveryOrder.meals))
     )
     orders = result.scalars().all()
 
@@ -92,16 +56,10 @@ async def get_delivery_orders_by_delivery_id(
 # Get all delivery orders
 @router.get("/delivery-orders", response_model=List[DeliveryOrderRead])
 async def list_delivery_orders(
-    skip: int = Query(0, ge=0),
-    limit: int = Query(10, le=100),
     db: AsyncSession = Depends(get_db)
 ):
     result = await db.execute(
         select(DeliveryOrder)
-        .options(selectinload(DeliveryOrder.meals))
-        .order_by(DeliveryOrder.delivery_date.asc())
-        .offset(skip)
-        .limit(limit)
     )
     orders = result.scalars().all()
     return orders
@@ -132,7 +90,7 @@ async def test_kafka():
     KafkaProducerSingleton.produce_message("delivery.order", json.dumps(test_msg))
     logging.warning(f"Sent message: {json.dumps(test_msg)}")
     
-    return {"message": "Lol!"}
+    return {"message": "Ll!"}
 
 
 # Test endpoint

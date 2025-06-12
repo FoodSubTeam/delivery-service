@@ -3,55 +3,19 @@ from typing import List, Optional
 from datetime import date, datetime
 from enum import Enum
 
-# Write
-class OrderStatus(str, Enum):
-    pending = "pending"
-    in_preparation = "in_preparation"
-    ready = "ready"
+class DeliveryOrderStatus(str, Enum):
+    waiting_for_delivery = "waiting_for_delivery"
+    in_progress = "in_progress"
     delivered = "delivered"
     failed = "failed"
 
-class DeliveryOrderMealCreate(BaseModel):
-    meal_id: int
-    meal_name: str
-    recipe: str
-    notes: Optional[str] = None
-    quantity: int = Field(default=1, ge=1)
-
-class DeliveryOrderCreate(BaseModel):
-    subscription_id: str
-    user_id: str
-    delivery_id: int
-    delivery_date: date
-    delivery_address: str
-    status: OrderStatus = OrderStatus.pending
-    meals: List[DeliveryOrderMealCreate]
-
-
-# Read
-class DeliveryOrderMealRead(BaseModel):
-    id: int
-    meal_id: int
-    meal_code: str
-    meal_name: str
-    description: str
-    notes: Optional[str]
-    quantity: int
-
-    class Config:
-        orm_mode = True
-
 class DeliveryOrderRead(BaseModel):
     id: int
-    subscription_id: str
     user_id: str
-    delivery_id: int
+    kitchen_order_id: int
     delivery_date: date
     delivery_address: str
-    status: OrderStatus
-    created_at: Optional[datetime]
-    updated_at: Optional[datetime]
-    meals: List[DeliveryOrderMealRead]
+    status: DeliveryOrderStatus
 
     class Config:
         orm_mode = True
