@@ -23,5 +23,15 @@ spec:
                 secretKeyRef:
                   name: secrets
                   key: database_url
+            - name: SHIPENGINE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: shipengine_api_key   
+            - name: SHIPENGINE_CARRIER_ID
+              valueFrom:
+                secretKeyRef:
+                  name: secrets
+                  key: shipengine_carrier_id
             - name: KAFKA_BOOTSTRAP_SERVERS
               value: kafka-service.kafka.svc.cluster.local:9092
