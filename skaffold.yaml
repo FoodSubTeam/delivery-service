@@ -20,10 +20,6 @@ deploy:
 
 portForward:
   - resourceType: service
-    resourceName: delivery-service
-    port: 80
-    localPort: 8000
-  - resourceType: service
     resourceName: delivery-postgres
     port: 5432
     localPort: 5432
