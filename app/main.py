@@ -23,7 +23,7 @@ async def on_startup():
 
     # Create tables on startup
     async with engine.begin() as conn:
-        # await conn.execute(text("DROP TYPE orderstatus CASCADE"))
+        # await conn.execute(text("DROP TYPE deliveryorderstatus CASCADE"))
         # await conn.execute(text("DROP TABLE delivery_orders CASCADE"))
         # await conn.run_sync(Base.metadata.drop_all)  # Uncomment to reset database entries
         await conn.run_sync(Base.metadata.create_all)
