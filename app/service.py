@@ -12,6 +12,7 @@ import httpx
 import os
 from fastapi import HTTPException
 import copy
+import uuid
 
 class DeliveryService():
     
@@ -142,7 +143,7 @@ class DeliveryService():
         for idx, customer in enumerate(customers):
             shipment = copy.deepcopy(base_shipment)
 
-            shipment["external_shipment_id"] = f"order-{idx+1}"
+            shipment["external_shipment_id"] = str(uuid.uuid4())
             shipment["ship_to"] = {
                 "name": customer.name,
                 "phone": customer.phone,
