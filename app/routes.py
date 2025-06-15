@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Header, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
-from app.models import DeliveryOrder
+from app.models import DeliveryOrder, Warehouse
 from app.schemas import DeliveryOrderRead, WarehouseRequest
 from app.database import SessionLocal
 from typing import List, Optional
@@ -56,7 +56,7 @@ async def get_delivery_orders_by_delivery_id(
 
 
 # Get all delivery orders
-@router.get("/delivery-orders", response_model=List[DeliveryOrderRead])
+@router.get("/delivery-orders")
 async def list_delivery_orders(
     db: AsyncSession = Depends(get_db)
 ):
@@ -64,7 +64,7 @@ async def list_delivery_orders(
         select(DeliveryOrder)
     )
     orders = result.scalars().all()
-    return orders
+    return {"delivery-orders": orders}
 
 
 # Add a warehouse
@@ -73,12 +73,26 @@ async def create_warehouse(
     warehouse: WarehouseRequest,
     db: AsyncSession = Depends(get_db)
 ):
-    warehouse_id = service.handle_create_warehouse(warehouse, db)
+    warehouse_id = await service.handle_create_warehouse(warehouse, db)
 
     return {
         "message": "Warehouse created successfully",
         "warehouse_id": warehouse_id
     }
+
+
+
+# Get all warehouses
+@router.get("/warehouses")
+async def create_warehouse(
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(
+        select(Warehouse)
+    )
+    warehouses = result.scalars().all()
+
+    return {"warehouses": warehouses}
 
 
 # Test endpoint

@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select, delete, update
+from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
+from sqlalchemy import delete, update
 from app.models import DeliveryOrder, Warehouse
 from datetime import datetime
 from app.schemas import Address, WarehouseRequest
@@ -56,14 +57,14 @@ class DeliveryService():
         await db.commit()
 
     
-    async def create_shipments(self, customers: List[Address]):
+    async def create_shipments(self, customers: List[Address], warehouse_id):
         headers = {
             "API-Key": self.secret_key,
             "Content-Type": "application/json"
         }
 
         payload = {
-            "shipments": self.create_shipment_payload(customers)
+            "shipments": self.create_shipment_payload(customers, warehouse_id)
         }
 
         async with httpx.AsyncClient() as client:
@@ -117,9 +118,7 @@ class DeliveryService():
                 raise HTTPException(status_code=500, detail=str(e))
         
 
-    def create_shipment_payload(self, customers: List[Address]):
-        warehouse_id = self.get_warehouse_id().id
-
+    def create_shipment_payload(self, customers: List[Address], warehouse_id):
         base_shipment = {
             "validate_address": "no_validation",
             "service_code": "usps_priority_mail",
@@ -187,25 +186,20 @@ class DeliveryService():
             
     
     async def handle_create_warehouse(self, warehouse: WarehouseRequest, db: AsyncSession):
-        # Save warehouse id to db
-        try:
-            # Delete all warehouses
-            await db.execute(delete(Warehouse))
-            await db.commit()
+        # Delete all warehouses
+        await db.execute(delete(Warehouse))
+        await db.commit()
 
-            warehouse_id = await self.create_warehouse_request(warehouse)
-            new_warehouse = Warehouse(id=warehouse_id)
+        warehouse_id = await self.create_warehouse_request(warehouse)
+        new_warehouse = Warehouse(id=warehouse_id)
 
-            logging.warning(f"warehouse id created: {warehouse_id}")
-            
-            db.add(new_warehouse)
-            await db.commit()
-            await db.refresh(new_warehouse)
+        logging.warning(f"warehouse id created: {warehouse_id}")
+        
+        db.add(new_warehouse)
+        await db.commit()
+        await db.refresh(new_warehouse)
 
-            return warehouse_id
-
-        finally:
-            db.close()
+        return warehouse_id
 
 
     async def get_warehouse_id(self, db: AsyncSession):

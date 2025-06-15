@@ -31,8 +31,8 @@ class WarehouseAddress(BaseModel):
     city_locality: str
     state_province: str
     postal_code: str
-    country_code: str
-    address_residential_indicator: str = Field(..., regex="^(yes|no)$")
+    country_code: str = "US"
+    address_residential_indicator: str = "yes"
 
 class WarehouseRequest(BaseModel):
     name: str
