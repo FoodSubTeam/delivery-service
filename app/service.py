@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
 from sqlalchemy import delete, update
-from app.models import DeliveryOrder, Warehouse
+from app.models import DeliveryOrder, Warehouse, DeliveryOrderStatus
 from datetime import datetime
 from app.schemas import Address, WarehouseRequest
 from typing import List
@@ -51,7 +51,10 @@ class DeliveryService():
         stmt = (
             update(DeliveryOrder)
             .where(DeliveryOrder.id.in_(order_ids))
-            .values(batch_id=batch_id)
+            .values(
+                batch_id=batch_id,
+                status=DeliveryOrderStatus.in_progress
+            )
         )
         
         await db.execute(stmt)

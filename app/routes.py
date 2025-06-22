@@ -64,7 +64,7 @@ async def list_delivery_orders(
         select(DeliveryOrder)
     )
     orders = result.scalars().all()
-    return {"delivery-orders": orders}
+    return {"delivery_orders": orders}
 
 
 # Add a warehouse
@@ -91,6 +91,8 @@ async def create_warehouse(
         select(Warehouse)
     )
     warehouses = result.scalars().all()
+
+    print(f"warehouses: {warehouses}")
 
     return {"warehouses": warehouses}
 
